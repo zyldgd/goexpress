@@ -112,20 +112,20 @@ const VarSuffix = "}"
 
 // ------------------------------------------
 
-type Operator string
+type Operator2 string
 
 const (
-	OpEq         Operator = "=="
-	OpNeq        Operator = "!="
-	OpAnd        Operator = "&&"
-	OpOr         Operator = "||"
-	OpNot        Operator = "!"
-	OpOpenParen  Operator = "("
-	OpCloseParen Operator = ")"
+	OpEq         Operator2 = "=="
+	OpNeq        Operator2 = "!="
+	OpAnd        Operator2 = "&&"
+	OpOr         Operator2 = "||"
+	OpNot        Operator2 = "!"
+	OpOpenParen  Operator2 = "("
+	OpCloseParen Operator2 = ")"
 )
 
 // 值约小，优先级约高
-func (op Operator) Priority() int {
+func (op Operator2) Priority() int {
 	switch op {
 	case OpOr:
 		return 12
@@ -141,19 +141,19 @@ func (op Operator) Priority() int {
 	return 999
 }
 
-func (op Operator) len() int {
+func (op Operator2) len() int {
 	return len(op)
 }
 
-func (op Operator) eq(str string) bool {
+func (op Operator2) eq(str string) bool {
 	return string(op) == str
 }
 
-//func (op Operator) string() string {
+//func (op Operator2) string() string {
 //	return []rune(op)
 //}
 
-func (op Operator) PriorTo(op2 Operator) bool {
+func (op Operator2) PriorTo(op2 Operator2) bool {
 	return op.Priority() < op2.Priority()
 }
 
@@ -184,15 +184,15 @@ func (e BoolValue) Bool() bool {
 type SimpleExpression struct {
 	Expression string
 	Values     []BoolValue
-	Operator   *Operator
+	Operator2  *Operator2
 }
 
 func (e SimpleExpression) Bool() bool {
-	if e.Operator == nil {
+	if e.Operator2 == nil {
 		return e.Values[0].Bool()
 	}
 
-	switch *e.Operator {
+	switch *e.Operator2 {
 	case OpNot:
 		return !e.Values[0].Bool()
 	case OpAnd:
@@ -243,7 +243,7 @@ func (s *Scanner) append(e interface{}) error {
 	return nil
 }
 
-func (s *Scanner) tryAppendOperator(op Operator) error {
+func (s *Scanner) tryAppendOperator(op Operator2) error {
 	if op.len()+s.index > len(s.expression) {
 		return fmt.Errorf("out of bound")
 	} else {
@@ -433,7 +433,7 @@ func (exp *BoolExpression) toPostfixExpression() error {
 
 loop:
 	for _, e := range elements {
-		if _, ok := e.(Operator); !ok {
+		if _, ok := e.(Operator2); !ok {
 			s1.Push(e)
 			continue
 		}
@@ -444,8 +444,8 @@ loop:
 			if s2.IsEmpty() || OpOpenParen == s2.Peak() {
 				s2.Push(e)
 			} else {
-				top := s2.Peak().(Operator)
-				if e.(Operator).PriorTo(top) {
+				top := s2.Peak().(Operator2)
+				if e.(Operator2).PriorTo(top) {
 					s2.Push(e)
 				} else {
 					s1.Push(s2.Pop())
@@ -456,7 +456,7 @@ loop:
 			s2.Push(e)
 		case OpCloseParen:
 			for !s2.IsEmpty() {
-				top := s2.Pop().(Operator)
+				top := s2.Pop().(Operator2)
 				if OpOpenParen == top {
 					continue loop
 				} else {
@@ -484,7 +484,7 @@ loop:
 	return nil
 }
 
-func compare(left interface{}, op Operator, right interface{}) bool {
+func compare(left interface{}, op Operator2, right interface{}) bool {
 	//leftT := reflect.ValueOf(left)
 	//rightT := reflect.TypeOf(right)
 	//
@@ -507,7 +507,7 @@ func (exp *BoolExpression) Evaluate(params map[string]interface{}) bool {
 
 	for i := len(exp.postfixExpression) - 1; i >= 0; i-- {
 		top := exp.postfixExpression[i]
-		if _, ok := top.(Operator); !ok {
+		if _, ok := top.(Operator2); !ok {
 			stackT.Push(top)
 		} else {
 			switch top {
@@ -605,15 +605,15 @@ func ToPostfixExpression(exs []interface{}) (*Stack, error) {
 
 loop:
 	for _, e := range exs {
-		if _, ok := e.(Operator); ok {
+		if _, ok := e.(Operator2); ok {
 			switch e {
 			case OpNot, OpOr, OpAnd, OpEq, OpNeq:
 			start:
 				if s2.IsEmpty() || OpOpenParen == s2.Peak() {
 					s2.Push(e)
 				} else {
-					top := s2.Peak().(Operator)
-					if e.(Operator).PriorTo(top) {
+					top := s2.Peak().(Operator2)
+					if e.(Operator2).PriorTo(top) {
 						s2.Push(e)
 					} else {
 						s1.Push(s2.Pop())
@@ -624,7 +624,7 @@ loop:
 				s2.Push(e)
 			case OpCloseParen:
 				for !s2.IsEmpty() {
-					top := s2.Pop().(Operator)
+					top := s2.Pop().(Operator2)
 					if OpOpenParen == top {
 						continue loop
 					} else {
@@ -664,7 +664,7 @@ func Evaluate(exs []interface{}, params map[string]interface{}) (bool, error) {
 	stackT := NewStack()
 	for !s.IsEmpty() {
 		top := s.Pop()
-		if _, ok := top.(Operator); ok {
+		if _, ok := top.(Operator2); ok {
 			switch top {
 			case OpEq:
 
