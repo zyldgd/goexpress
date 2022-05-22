@@ -1,6 +1,7 @@
 package token
 
 import (
+	"fmt"
 	"unicode"
 	"unicode/utf8"
 )
@@ -9,14 +10,16 @@ type Token int
 
 const (
 	Illegal         Token = iota
+	EOF                   // eof
+	ID                    // Identifier
 	Integer               // 12345
 	Float                 // 123.45
 	Char                  // 'a'
 	String                // "abc"
-	True                  // true
-	False                 // false
-	OpOpenParen           // (
-	OpCloseParen          // )
+	OpLParen              // (
+	OpRParen              // )
+	OpLBracket            // [
+	OpRBracket            // ]
 	OpNot                 // !
 	OpEq                  // ==
 	OpNeq                 // !=
@@ -26,7 +29,7 @@ const (
 	OpLte                 // <=
 	OpAnd                 // &&
 	OpOr                  // ||
-	OpPlus                // +
+	OpAdd                 // +
 	OpMinus               // -
 	OpMultiply            // *
 	OpDivide              // /
@@ -42,8 +45,10 @@ const (
 )
 
 var OperatorMap = map[string]Token{
-	"(":  OpOpenParen,
-	")":  OpCloseParen,
+	"(":  OpLParen,
+	")":  OpRParen,
+	"[":  OpLBracket,
+	"]":  OpRBracket,
 	"!":  OpNot,
 	"==": OpEq,
 	"!=": OpNeq,
@@ -53,7 +58,7 @@ var OperatorMap = map[string]Token{
 	"<=": OpLte,
 	"&&": OpAnd,
 	"||": OpOr,
-	"+":  OpPlus,
+	"+":  OpAdd,
 	"-":  OpMinus,
 	"*":  OpMultiply,
 	"/":  OpDivide,
@@ -72,48 +77,25 @@ func GetOperator(str string) Token {
 	return OperatorMap[str]
 }
 
-func OpPrecedence(Op Token) int {
-	switch Op {
-	case OpOpenParen, OpCloseParen, OpAccess:
-		return 1
-	case OpNot, OpBitwiseNot:
-		return 2
-	case OpMultiply, OpDivide, OpModulus:
-		return 3
-	case OpPlus, OpMinus:
-		return 4
-	case OpBitwiseLShift, OpBitwiseRShift:
-		return 5
-	case OpGt, OpLt, OpGte, OpLte:
-		return 6
-	case OpEq, OpNeq:
-		return 7
-	case OpBitwiseAnd:
-		return 8
-	case OpBitwiseXor:
-		return 9
-	case OpBitwiseOr:
-		return 10
-	case OpAnd:
-		return 11
-	case OpOr:
-		return 12
-	case OpSeparate:
-		return 15
-	}
-	return 0
-}
-
-func (tok Token) precedence() int {
+func (tok Token) Precedence() Precedence {
 	return OpPrecedence(tok)
 }
 
-func (tok Token) precedenceTo(Op2 Token) bool {
+func (tok Token) PrecedenceWith(Op2 Token) bool {
 	return OpPrecedence(tok) < OpPrecedence(Op2)
+}
+
+func (tok Token) MarshalJSON() ([]byte, error) {
+	s := fmt.Sprintf("\"%s\"", tok.String())
+	return []byte(s), nil
 }
 
 func (tok Token) String() string {
 	switch tok {
+	case EOF:
+		return "EOF"
+	case ID:
+		return "Identifier"
 	case Illegal:
 		return "Illegal"
 	case Integer:
@@ -124,14 +106,14 @@ func (tok Token) String() string {
 		return "CHAR"
 	case String:
 		return "STRING"
-	case True:
-		return "TRUE"
-	case False:
-		return "FALSE"
-	case OpOpenParen:
+	case OpLParen:
 		return "("
-	case OpCloseParen:
+	case OpRParen:
 		return ")"
+	case OpLBracket:
+		return "["
+	case OpRBracket:
+		return "]"
 	case OpNot:
 		return "!"
 	case OpEq:
@@ -150,7 +132,7 @@ func (tok Token) String() string {
 		return "&&"
 	case OpOr:
 		return "||"
-	case OpPlus:
+	case OpAdd:
 		return "+"
 	case OpMinus:
 		return "-"

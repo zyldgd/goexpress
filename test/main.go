@@ -3,28 +3,19 @@ package main
 import (
 	"go/ast"
 	"go/parser"
-	"go/token"
 )
 
 func main() {
 	// src is the input for which we want to print the AST.
-	src := `
-package main
-func main() {
-	var a int = 1
-	
-	println(a)
-}
-`
+	src := `abc.1sda`
 
 	// Create the AST by parsing src.
-	fset := token.NewFileSet() // positions are relative to fset
-	f, err := parser.ParseFile(fset, "", src, 0)
+	f, err := parser.ParseExpr(src)
 	if err != nil {
 		panic(err)
 	}
 
 	// Print the AST.
-	ast.Print(fset, f)
+	ast.Print(nil, f)
 
 }
