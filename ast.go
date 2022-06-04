@@ -1,9 +1,8 @@
-package ast
+package main
 
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/zyldgd/goexpress/token"
 )
 
 type Expr interface {
@@ -11,14 +10,14 @@ type Expr interface {
 }
 type (
 	LiteralExpr struct {
-		Kind    token.Token `json:"kind"`
+		Kind    main.Token  `json:"kind"`
 		Literal string      `json:"literal"`
 		Date    interface{} `json:"data"`
 	}
 
 	AccessExpr struct {
-		E      Expr   `json:"e"`
-		Access IDExpr `json:"access"`
+		E      Expr      `json:"e"`
+		Access IdentExpr `json:"access"`
 	}
 
 	IndexExpr struct {
@@ -26,14 +25,14 @@ type (
 		Index Expr `json:"index"`
 	}
 
-	IDExpr struct {
+	IdentExpr struct {
 		Name string `json:"name"`
 	}
 
 	BinaryExpr struct {
-		LE Expr        `json:"le"`
-		Op token.Token `json:"op"`
-		RE Expr        `json:"re"`
+		LE Expr       `json:"le"`
+		Op main.Token `json:"op"`
+		RE Expr       `json:"re"`
 	}
 
 	ParenExpr struct {
@@ -41,8 +40,8 @@ type (
 	}
 
 	UnaryExpr struct {
-		Op token.Token `json:"op"`
-		E  Expr        `json:"e"`
+		Op main.Token `json:"op"`
+		E  Expr       `json:"e"`
 	}
 )
 
@@ -60,7 +59,7 @@ func (e *IndexExpr) String() string {
 	return string(b)
 }
 
-func (e *IDExpr) String() string {
+func (e *IdentExpr) String() string {
 	b, _ := json.Marshal(e)
 	return string(b)
 }

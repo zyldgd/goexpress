@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"github.com/zyldgd/goexpress/token"
 	"strconv"
 	"strings"
 )
@@ -57,25 +56,25 @@ func (s *scanner) nextChar() rune {
 }
 
 func (s *scanner) skip() {
-	for token.IsSpace(s.char) {
+	for IsSpace(s.char) {
 		s.next()
 	}
 }
 
 // -------------------------------------------------------------------------------------
 
-func (s *scanner) scan() (token.Token, string) {
+func (s *scanner) scan() (Token, string) {
 	s.skip()
 	if s.index >= len(s.source) {
-		return token.EOF, ""
+		return EOF, ""
 	}
 
-	tok, lit := token.Illegal, ""
+	tok, lit := Illegal, ""
 
 	switch {
-	case token.IsDecimal(s.char):
+	case IsDecimal(s.char):
 		tok, lit = s.scanNumber()
-	case token.IsLetter(s.char) || '_' == s.char:
+	case IsLetter(s.char) || '_' == s.char:
 		tok, lit = s.scanIdentifier()
 	case '"' == s.char:
 		tok, lit = s.scanString()
@@ -84,76 +83,76 @@ func (s *scanner) scan() (token.Token, string) {
 	default:
 		switch s.char {
 		case '+':
-			tok, lit = token.OpAdd, "+"
+			tok, lit = OpAdd, "+"
 		case '-':
-			tok, lit = token.OpMinus, "-"
+			tok, lit = OpMinus, "-"
 		case '*':
-			tok, lit = token.OpMultiply, "*"
+			tok, lit = OpMultiply, "*"
 		case '/':
-			tok, lit = token.OpDivide, "/"
+			tok, lit = OpDivide, "/"
 		case '%':
-			tok, lit = token.OpModulus, "%"
+			tok, lit = OpModulus, "%"
 		case '(':
-			tok, lit = token.OpLParen, "("
+			tok, lit = OpLParen, "("
 		case ')':
-			tok, lit = token.OpRParen, ")"
+			tok, lit = OpRParen, ")"
 		case '[':
-			tok, lit = token.OpLBracket, "["
+			tok, lit = OpLBracket, "["
 		case ']':
-			tok, lit = token.OpRBracket, "]"
+			tok, lit = OpRBracket, "]"
 		case '.':
-			tok, lit = token.OpAccess, "."
+			tok, lit = OpAccess, "."
 		case '!':
 			if '=' == s.nextChar() {
 				s.next()
-				tok, lit = token.OpNeq, "!="
+				tok, lit = OpNeq, "!="
 			} else {
-				tok, lit = token.OpNot, "!"
+				tok, lit = OpNot, "!"
 			}
 		case '=':
 			if '=' == s.nextChar() {
 				s.next()
-				tok, lit = token.OpEq, "=="
+				tok, lit = OpEq, "=="
 			} else {
-				tok, lit = token.Illegal, "" // Illegal
+				tok, lit = Illegal, "" // Illegal
 			}
 		case '&':
 			if '&' == s.nextChar() {
 				s.next()
-				tok, lit = token.OpAnd, "&&"
+				tok, lit = OpAnd, "&&"
 			} else {
-				tok, lit = token.OpBitwiseAnd, "&"
+				tok, lit = OpBitwiseAnd, "&"
 			}
 		case '|':
 			if '|' == s.nextChar() {
 				s.next()
-				tok, lit = token.OpOr, "||"
+				tok, lit = OpOr, "||"
 			} else {
-				tok, lit = token.OpBitwiseOr, "|"
+				tok, lit = OpBitwiseOr, "|"
 			}
 		case '^':
-			tok, lit = token.OpBitwiseXor, "^"
+			tok, lit = OpBitwiseXor, "^"
 		case '~':
-			tok, lit = token.OpBitwiseNot, "~"
+			tok, lit = OpBitwiseNot, "~"
 		case '<':
 			if '=' == s.nextChar() {
 				s.next()
-				tok, lit = token.OpLte, "<="
+				tok, lit = OpLte, "<="
 			} else if '<' == s.nextChar() {
 				s.next()
-				tok, lit = token.OpBitwiseLShift, "<<"
+				tok, lit = OpBitwiseLShift, "<<"
 			} else {
-				tok, lit = token.OpLt, "<"
+				tok, lit = OpLt, "<"
 			}
 		case '>':
 			if '=' == s.nextChar() {
 				s.next()
-				tok, lit = token.OpGte, ">="
+				tok, lit = OpGte, ">="
 			} else if '>' == s.nextChar() {
 				s.next()
-				tok, lit = token.OpBitwiseRShift, ">>"
+				tok, lit = OpBitwiseRShift, ">>"
 			} else {
-				tok, lit = token.OpGt, ">"
+				tok, lit = OpGt, ">"
 			}
 		}
 
@@ -164,20 +163,20 @@ func (s *scanner) scan() (token.Token, string) {
 }
 
 // scanNumber fun look for Integer and Float
-func (s *scanner) scanNumber() (token.Token, string) {
+func (s *scanner) scanNumber() (Token, string) {
 	start := s.index
-	tok := token.Integer
-	for token.IsDecimal(s.char) {
+	tok := Integer
+	for IsDecimal(s.char) {
 		s.next()
 	}
 
 	if s.char == '.' {
-		tok = token.Float
+		tok = Float
 		s.next()
-		if !token.IsDecimal(s.char) {
-			return token.Illegal, ""
+		if !IsDecimal(s.char) {
+			return Illegal, ""
 		}
-		for token.IsDecimal(s.char) {
+		for IsDecimal(s.char) {
 			s.next()
 		}
 	}
@@ -201,9 +200,9 @@ func (s *scanner) scanEscape() bool {
 }
 
 // scanString fun look for string
-func (s *scanner) scanString() (token.Token, string) {
+func (s *scanner) scanString() (Token, string) {
 	start := s.index // start with "
-	tok := token.String
+	tok := String
 
 	for {
 		s.next()
@@ -211,46 +210,46 @@ func (s *scanner) scanString() (token.Token, string) {
 			break
 		} else if s.char == '\\' {
 			if !s.scanEscape() {
-				return token.Illegal, ""
+				return Illegal, ""
 			}
 		}
 	}
 
 	if s.char != '"' || start == s.index {
-		return token.Illegal, ""
+		return Illegal, ""
 	}
 	s.next()
 
 	return tok, string(s.source[start:s.index])
 }
 
-func (s *scanner) scanChar() (token.Token, string) {
+func (s *scanner) scanChar() (Token, string) {
 	start := s.index // start with '
-	tok := token.Char
+	tok := Char
 
 	s.next()
 	if s.char == '\\' {
 		if !s.scanEscape() {
-			return token.Illegal, ""
+			return Illegal, ""
 		}
 	} else if s.char < 0 {
-		return token.Illegal, ""
+		return Illegal, ""
 	}
 	s.next()
 	if s.char != '\'' {
-		return token.Illegal, ""
+		return Illegal, ""
 	}
 
 	s.next()
 	return tok, string(s.source[start:s.index])
 }
 
-func (s *scanner) scanIdentifier() (token.Token, string) {
+func (s *scanner) scanIdentifier() (Token, string) {
 	start := s.index
 
-	for token.IsLetter(s.char) || token.IsDecimal(s.char) || '_' == s.char {
+	for IsLetter(s.char) || IsDecimal(s.char) || '_' == s.char {
 		s.next()
 	}
 
-	return token.ID, string(s.source[start:s.index])
+	return Ident, string(s.source[start:s.index])
 }

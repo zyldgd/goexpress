@@ -1,8 +1,6 @@
 package main
 
 import (
-	"github.com/zyldgd/goexpress/ast"
-	"github.com/zyldgd/goexpress/token"
 	"strconv"
 	"testing"
 )
@@ -10,7 +8,7 @@ import (
 func TestSkipSpace(t *testing.T) {
 	scan := NewScanner(`     12+3  4.98-66 +a ('v')  <= 44 && true + "asdasd\""        `)
 
-	for tok, lit := scan.scan(); tok != token.EOF && tok != token.Illegal; tok, lit = scan.scan() {
+	for tok, lit := scan.scan(); tok != EOF && tok != Illegal; tok, lit = scan.scan() {
 		t.Logf("tok:%s , lit:%s", tok, lit)
 	}
 
@@ -18,7 +16,7 @@ func TestSkipSpace(t *testing.T) {
 
 func TestParseExpr(t *testing.T) {
 	e := ParserAST(`(a.e + b.c) - "12312312" - v[c.s]`)
-	ast.PrintAst(e)
+	PrintAst(e)
 }
 
 func TestScanNumber(t *testing.T) {
